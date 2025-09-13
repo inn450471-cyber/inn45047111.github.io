@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>女帝养成模拟器 (AI增强版)</title>
+    <style>
+        :root {
+            --ivory-silk: #E3D4C7;
+            --cold-crimson: #6E2F3E;
+            --bronze-green: #A79582;
+            --text-main: #3a3a3a;
+            --text-light: #5c5c5c;
+            --border-color: rgba(110, 47, 62, 0.3);
+        }
+
+        @font-face {
+            font-family: 'Simu';
+            src: url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Simu', 'Noto Serif SC', serif;
+            background-color: #f5f0e9;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            background: linear-gradient(180deg, var(--ivory-silk), #d7c9b9);
+            border-bottom: 2px solid var(--border-color);
+            font-size: 0.9em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .top-bar-item {
+            color: var(--cold-crimson);
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .left-panel {
+            background-color: rgba(227, 212, 199, 0.85);
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(2px);
+        }
+
+        .empress-card {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .empress-avatar img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--cold-crimson);
+        }
+
+        .empress-stats {
+            flex-grow: 1;
+        }
+
+        .empress-stats h3 {
+            margin: 0 0 5px 0;
+            color: var(--cold-crimson);
+            font-size: 1.2em;
+        }
+        
+        .empress-stats ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            font-size: 0.85em;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 10px;
+        }
+
+        .empress-stats li {
+            white-space: nowrap;
+        }
+
+        .center-panel {
+            flex-grow: 1;
+            background-image: url('https://s1.imagehub.cc/images/2025/05/22/26411b96ede55df85046a0e571e424e0.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            min-height: 300px;
+        }
+
+        .dialogue-box {
+            background-color: rgba(227, 212, 199, 0.88);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(4px);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .dialogue-box p {
+            margin: 0 0 15px 0;
+            line-height: 1.6;
+            color: var(--text-light);
+            font-size: 0.95em;
+        }
+
+        .event-box {
+            border: 1px dashed var(--bronze-green);
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+        
+        .event-box h4 {
+            margin: 0 0 10px 0;
+            color: var(--cold-crimson);
+            font-weight: bold;
+        }
+        
+        .event-box .option {
+            font-size: 1em;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .event-box .option:hover {
+            color: var(--cold-crimson);
+        }
+
+        .bottom-bar {
+            padding: 10px;
+            background: linear-gradient(0deg, var(--ivory-silk), #d7c9b9);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-style: italic;
+            color: var(--bronze-green);
+            font-size: 0.9em;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-bar {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            background-color: var(--cold-crimson);
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 12px 0;
+            background-color: transparent;
+            border: none;
+            color: var(--ivory-silk);
+            font-size: 1em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:not(:last-child) {
+            border-right: 1px solid rgba(227, 212, 199, 0.3);
+        }
+
+        .action-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* --- 新增：设置模态框样式 --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none; /* 默认隐藏 */
+        }
+        .modal-content {
+            background: var(--ivory-silk);
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid var(--cold-crimson);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            font-family: 'Simu', 'Noto Serif SC', serif;
+        }
+        .modal-content h3 {
+            color: var(--cold-crimson);
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+        .modal-content label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            box-sizing: border-box;
+            font-family: 'Simu', 'Noto Serif SC', serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 8px 20px;
+            border-radius: 5px;
+            border: 1px solid var(--cold-crimson);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .modal-button-primary {
+            background-color: var(--cold-crimson);
+            color: var(--ivory-silk);
+        }
+        .modal-button-secondary {
+            background-color: transparent;
+            color: var(--cold-crimson);
+        }
+        .modal-button:hover {
+            opacity: 0.8;
+        }
+        /* --- 样式结束 --- */
+
+
+        /* Desktop Layout */
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+            .left-panel {
+                flex: 0 0 320px; /* Fixed width for left panel */
+                border-right: 1px solid var(--border-color);
+                border-bottom: none;
+            }
+            .empress-card {
+                flex-direction: column;
+                align-items: center;
+            }
+            .empress-stats ul {
+                 grid-template-columns: 1fr;
+                 gap: 5px;
+                 text-align: center;
+            }
+            .empress-stats h3 {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 顶部政务栏 -->
+        <header class="top-bar">
+            <span class="top-bar-item">国库: 50000 两</span>
+            <span class="top-bar-item">地点: 太极殿</span>
+            <span class="top-bar-item">元年 · 正月 · 朔日 · 寅时</span>
+        </header>
+
+        <!-- 主体内容区 -->
+        <main class="main-content">
+            <!-- 左侧君主面板 -->
+            <aside class="left-panel">
+                <div class="empress-card">
+                    <div class="empress-avatar">
+                        <img src="https://s1.imagehub.cc/images/2025/05/20/99ca7536a0913bc24b919f001240347d.jpg" alt="女帝">
+                    </div>
+                    <div class="empress-stats">
+                        <h3>主控属性</h3>
+                        <ul>
+                            <li>凤名：女帝自定义</li>
+                            <li>凰龄：16 (碧玉年华)</li>
+                            <li>纪年：女帝自定义</li>
+                            <li>寿数：88 (天命轮盘)</li>
+                            <li>健康：100</li>
+                            <li>凤仪：0 (形貌昳丽)</li>
+                            <li>权术：0 (懵懂稚子)</li>
+                            <li>才略：0 (不求甚解)</li>
+                            <li>武魄：0 (弱柳扶风)</li>
+                            <li>民心：0 (民不聊生)</li>
+                            <li>军力：0 (羸弱之师)</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 中央交互区 -->
+            <section class="center-panel">
+                <div class="dialogue-box" id="dialogue-box">
+                    <p>礼部尚书高举玉玺，声震大殿：“请陛下登临九五，受传国玉玺！”</p>
+                    <div class="event-box">
+                        <h4>事件：登基大典</h4>
+                        <div class="option" id="event-option">1. 伸出双手，接过玉玺，君临天下。</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部侍君栏 -->
+        <section class="bottom-bar">
+            <span>后宫尚无侍君</span>
+        </section>
+
+        <!-- 操作控制栏 -->
+        <footer class="action-bar">
+            <button class="action-button">宫廷</button>
+            <button class="action-button">档案</button>
+            <button class="action-button">六部</button>
+            <button class="action-button">出宫</button>
+            <!-- 新增：设置按钮 -->
+            <button class="action-button" id="settings-button">设置</button>
+        </footer>
+    </div>
+
+    <!-- 新增：设置模态框HTML -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content">
+            <h3>AI接口设置</h3>
+            <div class="form-group">
+                <label for="api-provider">选择服务商</label>
+                <select id="api-provider">
+                    <option value="openai">OpenAI 协议</option>
+                    <option value="gemini">Google Gemini 协议</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="api-url">API 地址 (URL)</label>
+                <input type="text" id="api-url" placeholder="例如: https://api.openai.com/v1/chat/completions">
+            </div>
+            <div class="form-group">
+                <label for="api-key">密钥 (API Key)</label>
+                <input type="password" id="api-key" placeholder="请填入你的API Key">
+            </div>
+            <div class="form-group">
+                <label for="api-model">模型名称 (Model)</label>
+                <input type="text" id="api-model" placeholder="例如: gpt-4o 或 gemini-1.5-pro-latest">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-secondary" id="close-settings-button">关闭</button>
+                <button class="modal-button modal-button-primary" id="save-settings-button">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增：JavaScript 核心逻辑 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM 元素获取 ---
+            const settingsButton = document.getElementById('settings-button');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettingsButton = document.getElementById('close-settings-button');
+            const saveSettingsButton = document.getElementById('save-settings-button');
+            const eventOption = document.getElementById('event-option');
+            const dialogueBox = document.getElementById('dialogue-box');
+
+            // --- API 设置表单元素 ---
+            const providerSelect = document.getElementById('api-provider');
+            const apiUrlInput = document.getElementById('api-url');
+            const apiKeyInput = document.getElementById('api-key');
+            const apiModelInput = document.getElementById('api-model');
+
+            // --- 从 localStorage 加载设置 ---
+            function loadSettings() {
+                providerSelect.value = localStorage.getItem('api_provider') || 'openai';
+                apiUrlInput.value = localStorage.getItem('api_url') || '';
+                apiKeyInput.value = localStorage.getItem('api_key') || '';
+                apiModelInput.value = localStorage.getItem('api_model') || '';
+            }
+
+            // --- 保存设置到 localStorage ---
+            function saveSettings() {
+                localStorage.setItem('api_provider', providerSelect.value);
+                localStorage.setItem('api_url', apiUrlInput.value);
+                localStorage.setItem('api_key', apiKeyInput.value);
+                localStorage.setItem('api_model', apiModelInput.value);
+                alert('设置已保存！');
+                settingsModal.style.display = 'none';
+            }
+
+            // --- 统一的 AI 调用函数 ---
+            async function callAI(prompt) {
+                const provider = localStorage.getItem('api_provider');
+                const url = localStorage.getItem('api_url');
+                const key = localStorage.getItem('api_key');
+                const model = localStorage.getItem('api_model');
+
+                if (!url || !key || !model) {
+                    throw new Error('AI设置不完整，请点击右下角“设置”按钮进行配置。');
+                }
+
+                let headers = { 'Content-Type': 'application/json' };
+                let body;
+                let finalUrl = url;
+
+                if (provider === 'openai') {
+                    headers['Authorization'] = `Bearer ${key}`;
+                    body = JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.8 // 增加一点随机性
+                    });
+                } else if (provider === 'gemini') {
+                    // Gemini 的 URL 结构通常是: .../v1beta/models/MODEL_NAME:generateContent?key=API_KEY
+                    finalUrl = `${url}?key=${key}`;
+                    body = JSON.stringify({
+                        contents: [{
+                            parts: [{ "text": prompt }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.8
+                        }
+                    });
+                } else {
+                    throw new Error('不支持的 AI 服务商。');
+                }
+                
+                try {
+                    const response = await fetch(finalUrl, {
+                        method: 'POST',
+                        headers: headers,
+                        body: body
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('API Error Response:', errorData);
+                        throw new Error(`网络请求失败，状态码: ${response.status}. 错误信息: ${errorData.error?.message || '未知错误'}`);
+                    }
+
+                    const data = await response.json();
+
+                    // 解析不同协议的返回内容
+                    if (provider === 'openai') {
+                        return data.choices[0]?.message?.content?.trim();
+                    } else if (provider === 'gemini') {
+                        return data.candidates[0]?.content?.parts[0]?.text?.trim();
+                    }
+                } catch (error) {
+                    console.error('Fetch Error:', error);
+                    throw new Error(`调用AI时出错: ${error.message}`);
+                }
+            }
+
+
+            // --- 事件绑定 ---
+            settingsButton.addEventListener('click', () => {
+                settingsModal.style.display = 'flex';
+            });
+
+            closeSettingsButton.addEventListener('click', () => {
+                settingsModal.style.display = 'none';
+            });
+
+            saveSettingsButton.addEventListener('click', saveSettings);
+
+            // 点击游戏选项，触发AI
+            eventOption.addEventListener('click', async () => {
+                const originalText = eventOption.textContent;
+                
+                // 1. 显示加载状态
+                dialogueBox.innerHTML = `<p>你伸出了双手，准备接过那象征着无上权力的玉玺...</p><p><i>（女帝正在沉思，等待天启...）</i></p>`;
+
+                // 2. 构建 Prompt
+                const prompt = `
+                你是一位刚刚登基的女帝，身处庄严肃穆的登基大典。
+                情景：礼部尚书高举玉玺，声震大殿：“请陛下登临九五，受传国玉玺！”
+                你的抉择是：“${originalText.trim()}”
+                请以第一人称“朕”来续写一段接下来发生的场景、你的心理活动、以及你对群臣的宣告。
+                要求：
+                - 风格：古风、沉稳、大气、充满帝王威仪。
+                - 内容：包含接过玉玺的动作细节、内心的思绪（可以是感慨、责任感、或对未来的谋划），以及一句简短而有力的宣告。
+                - 格式：直接输出续写的文本，不要包含任何解释或标题。
+                `;
+
+                try {
+                    // 3. 调用 AI
+                    const aiResponse = await callAI(prompt);
+                    
+                    if (!aiResponse) {
+                       throw new Error("AI未能生成有效回复，请检查API设置或网络。");
+                    }
+                    
+                    // 4. 渲染 AI 返回的结果
+                    // 将换行符\n替换为<br>以在HTML中正确显示
+                    const formattedResponse = aiResponse.replace(/\n/g, '<br>');
+                    dialogueBox.innerHTML = `<p>${formattedResponse}</p>`;
+                    // 可以在这里添加新的事件选项
+                    // dialogueBox.innerHTML += `<div class="event-box">...</div>`;
+
+                } catch (error) {
+                    // 5. 处理错误
+                    dialogueBox.innerHTML = `<p style="color: var(--cold-crimson);"><b>天启中断...</b></p><p>${error.message}</p>
+                    <div class="event-box">
+                        <h4>错误排查</h4>
+                        <div class="option" onclick="location.reload()">1. 刷新页面重试</div>
+                        <div class="option" id="reopen-settings">2. 检查AI设置</div>
+                    </div>`;
+                    
+                    // 为错误提示中的“检查AI设置”按钮添加事件
+                    document.getElementById('reopen-settings').addEventListener('click', () => {
+                        settingsModal.style.display = 'flex';
+                    });
+                }
+            });
+
+            // --- 初始化 ---
+            loadSettings();
+        });
+    </script>
+
+</body>
+</html>
+
